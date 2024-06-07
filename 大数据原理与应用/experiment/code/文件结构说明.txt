@@ -1,0 +1,10 @@
+data						# 存放数据文件以及临时生成的文件
+recommend-logistic.py		# 执行基于逻辑回归的推荐
+recommend-rule.py			# 执行基于规则的推荐
+tmall.py					# 将用到的函数进行封装
+user_rule.py				# 基于规则的推荐，需要改进的部分
+user_feature.py				# 基于逻辑回归的推荐，需要改进的部分
+
+
+备注：
+运行代码时，会生成一些.pyc文件，这是正常现象
