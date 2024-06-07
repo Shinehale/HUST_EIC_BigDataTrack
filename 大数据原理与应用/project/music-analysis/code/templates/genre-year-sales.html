@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>ECharts</title>
+    <!-- 引入 echarts.js -->
+    <script src="static/js/echarts-gl.min.js"></script>
+    <script src="static/js/jquery.min.js"></script>
+</head>
+
+<body>
+    <a href="/">Return</a>
+    <br>
+    <br>
+    <!-- 为ECharts准备一个具备大小（宽高）的Dom -->
+    <div id="genre-year-sales" style="width: 1000px;height:550px;"></div>
+    <script type="text/javascript">
+        $.getJSON("static/data/genre-year-sales.json", d => {
+            console.log(d);
+
+            // 基于准备好的dom，初始化echarts实例
+            var myChart = echarts.init(document.getElementById('genre-year-sales'), 'light');
+            option = {
+                legend: {},
+                tooltip: {
+                    trigger: 'axis',
+                    showContent: false
+                },
+                dataset: {
+                    source: [
+                        ['year', ...d['Indie'].map(v => `${v[1]}`)],
+                        ...['Indie', 'Pop', 'Rap', 'Latino', 'Pop-Rock'].map(v => [v, ...d[v].map(v1 => v1[2])])
+                    ]
+                },
+                xAxis: { type: 'category' },
+                yAxis: { gridIndex: 0 },
+                grid: { top: '55%' },
+                series: [
+                    { type: 'line', smooth: true, seriesLayoutBy: 'row' },
+                    { type: 'line', smooth: true, seriesLayoutBy: 'row' },
+                    { type: 'line', smooth: true, seriesLayoutBy: 'row' },
+                    { type: 'line', smooth: true, seriesLayoutBy: 'row' },
+                    { type: 'line', smooth: true, seriesLayoutBy: 'row' },
+                    {
+                        type: 'pie',
+                        id: 'pie',
+                        radius: '30%',
+                        center: ['50%', '25%'],
+                        label: {
+                            formatter: '{b}: {@2000} ({d}%)' //b是数据名，d是百分比
+                        },
+                        encode: {
+                            itemName: 'year',
+                            value: '2000',
+                            tooltip: '2000'
+                        }
+                    }
+
+                ]
+            };
+
+            myChart.on('updateAxisPointer', function (event) {
+                var xAxisInfo = event.axesInfo[0];
+                if (xAxisInfo) {
+                    var dimension = xAxisInfo.value + 1;
+                    myChart.setOption({
+                        series: {
+                            id: 'pie',
+                            label: {
+                                formatter: '{b}: {@[' + dimension + ']} ({d}%)'
+                            },
+                            encode: {
+                                value: dimension,
+                                tooltip: dimension
+                            }
+                        }
+                    });
+                }
+            });
+
+
+            // 使用刚指定的配置项和数据显示图表。
+            myChart.setOption(option);
+
+        })
+    </script>
+</body>
+
+</html>

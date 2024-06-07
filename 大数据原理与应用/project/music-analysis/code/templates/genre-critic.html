@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>ECharts</title>
+    <!-- 引入 echarts.js -->
+    <script src="static/js/echarts-gl.min.js"></script>
+    <script src="static/js/jquery.min.js"></script>
+</head>
+
+<body>
+    <a href="/">Return</a>
+    <br>
+    <br>
+    <!-- 为ECharts准备一个具备大小（宽高）的Dom -->
+    <div id="genre-critic" style="width: 1000px;height:550px;"></div>
+    <script type="text/javascript">
+        $.getJSON("static/data/genre-critic.json", d => {
+            console.log(d);
+
+            // 基于准备好的dom，初始化echarts实例
+            var myChart = echarts.init(document.getElementById('genre-critic'), 'light');
+            option = {
+                
+                legend: {},
+                tooltip: {},
+                dataset: {
+                    source: [
+                        ['genre', ...d.map(v => v[0])],
+                        ['rolling_stone_critic', ...d.map(v => v[1])],
+                        ['mtv_critic', ...d.map(v => v[2])],
+                        ['music_maniac_critic', ...d.map(v => v[3])]
+                    ]
+                },
+                xAxis: [
+                    { type: 'category', gridIndex: 0 },
+                    { type: 'category', gridIndex: 1 }
+                ],
+                yAxis: [
+                    { gridIndex: 0 , min: 2.7},
+                    { gridIndex: 1 , min: 2.7}
+                ],
+                grid: [
+                    { bottom: '55%' },
+                    { top: '55%' }
+                ],
+                series: [
+                    // These series are in the first grid.
+                    { type: 'bar', seriesLayoutBy: 'row' , barWidth: 30},
+                    { type: 'bar', seriesLayoutBy: 'row' , barWidth: 30},
+                    { type: 'bar', seriesLayoutBy: 'row' , barWidth: 30 },
+                    // These series are in the second grid.
+                    { type: 'bar', xAxisIndex: 1, yAxisIndex: 1 , barWidth: 35},
+                    { type: 'bar', xAxisIndex: 1, yAxisIndex: 1 , barWidth: 35},
+                    { type: 'bar', xAxisIndex: 1, yAxisIndex: 1 , barWidth: 35},
+                    { type: 'bar', xAxisIndex: 1, yAxisIndex: 1 , barWidth: 35}
+                ]
+            };
+
+
+
+
+
+            // 使用刚指定的配置项和数据显示图表。
+            myChart.setOption(option);
+
+        })
+    </script>
+</body>
+
+</html>
