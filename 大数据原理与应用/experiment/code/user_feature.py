@@ -3,11 +3,6 @@
 
 from copy import copy
 from tmall import *
-import math
-
-# 引入时间衰减因子函数
-def time_decay_factor(days_since_last_action, decay_rate=0.95):
-    return decay_rate ** days_since_last_action
 
 # 特征计算
 # 基于逻辑回归的推荐需要划分训练集与预测集
@@ -16,6 +11,7 @@ def time_decay_factor(days_since_last_action, decay_rate=0.95):
 # 通过参数classify进行判断，不处理与当前类型不符合的数据。
 def generateFeature(classify, data):
     F = {}
+    user_brand_interaction = {}
 
     item = {
         'click': 0,  # 点击次数
@@ -23,15 +19,18 @@ def generateFeature(classify, data):
         'fav': 0,  # 加入收藏夹次数
         'cart': 0,  # 加入购物车次数
         'diff_day': 1000,  # 相差天数初始化
-        'total_activity': 0,  # 活跃度
-        'time_decay_click': 0,  # 点击时间衰减特征
-        'time_decay_buy': 0,  # 购买时间衰减特征
-        'time_decay_fav': 0,  # 收藏时间衰减特征
-        'time_decay_cart': 0,  # 车时间衰减特征
+        'click_decay': 0,  # 点击时间衰减特征
+        'buy_decay': 0,  # 购买时间衰减特征
+        'fav_decay': 0,  # 收藏时间衰减特征
+        'cart_decay': 0,  # 加入购物车时间衰减特征
+        'interaction_frequency': 0,  # 用户与品牌的交互频率
+        'historical_activity': 0,  # 用户历史活跃度
     }
+    
 
-    feature_name = ['click', 'buy', 'fav', 'cart', 'diff_day', 'total_activity',
-                    'time_decay_click', 'time_decay_buy', 'time_decay_fav', 'time_decay_cart']
+
+    feature_names = ['click', 'buy', 'fav', 'cart', 'diff_day', 'click_decay',
+                     'buy_decay', 'fav_decay', 'cart_decay', 'interaction_frequency', 'historical_activity']
 
     for uid, bid, action_type, month, day in data:
         if classify != getClassify(month, day):
@@ -39,6 +38,7 @@ def generateFeature(classify, data):
 
         F.setdefault(uid, {})
         F[uid].setdefault(bid, copy(item))
+        user_brand_interaction.setdefault(uid, set()).add(bid)
 
         e = F[uid][bid]
 
@@ -47,22 +47,24 @@ def generateFeature(classify, data):
             e['diff_day'] = diff_day
 
         # 基础特征计算并引入时间衰减
+        delay = (1.0 / (1 + diff_day)) 
         if action_type == 0:
             e['click'] += 1
-            e['time_decay_click'] += time_decay_factor(diff_day)
+            e['click_decay'] += delay
         elif action_type == 1:
             e['buy'] += 1
-            e['time_decay_buy'] += time_decay_factor(diff_day)
+            e['buy_decay'] += delay
         elif action_type == 2:
             e['fav'] += 1
-            e['time_decay_fav'] += time_decay_factor(diff_day)
+            e['fav_decay'] += delay
         elif action_type == 3:
             e['cart'] += 1
-            e['time_decay_cart'] += time_decay_factor(diff_day)
+            e['cart_decay'] += delay
 
-    # 综合得分计算，考虑时间衰减
+    # 计算额外的特征
     for uid, bid_list in F.items():
         for bid, e in bid_list.items():
-            e['total_activity'] = (e['fav'] * e['time_decay_fav'] + e['cart'] * e['time_decay_cart'])
+            e['interaction_frequency'] = len(user_brand_interaction[uid])
+            e['historical_activity'] = e['click'] + e['buy'] + e['fav'] + e['cart']
 
-    return F, feature_name
+    return F, feature_names

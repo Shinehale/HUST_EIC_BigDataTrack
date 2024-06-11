@@ -200,6 +200,6 @@ def getRecommendByLogistic(model, feature, feature_name):
 		recommend.append( (item[0], item[1]) )
 
 
-	# print ("\n所使用的特征: ", feature_name)
+	print ("\n所使用的特征: ", feature_name)
 
 	return recommend
